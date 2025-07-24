@@ -7,7 +7,7 @@ from io import BytesIO, StringIO
 # Set page configuration at the very top
 st.set_page_config(page_title="Soil Mechanics Virtual Lab", layout="wide")
 
-# Import ALL test modules, excluding ucs_test
+# Import ALL test modules, including ucs_test
 from tabs import (
     sieve_analysis,
     liquid_limit_casagrande,
@@ -19,15 +19,14 @@ from tabs import (
     variable_head,
     light_compaction,
     direct_shear,
-    # ucs_test,  <-- REMOVE THIS LINE
-    # New imports:
+    ucs_test,  # UCS test now included
     consolidation,
     cbr_test,
     vane_shear,
     triaxial_test
 )
 
-# Available tests - Updated to exclude the UCS test
+# Available tests - UCS test added
 test_functions = {
     "Sieve Analysis": sieve_analysis,
     "Liquid Limit (Casagrande)": liquid_limit_casagrande,
@@ -39,8 +38,7 @@ test_functions = {
     "Variable Head Permeability": variable_head,
     "Light Compaction Test": light_compaction,
     "Direct Shear Test": direct_shear,
-    # "Unconfined Compressive Strength (UCS)": ucs_test, <-- REMOVE OR COMMENT OUT THIS LINE
-    # New tests added here:
+    "Unconfined Compressive Strength (UCS)": ucs_test,
     "Consolidation Test": consolidation,
     "California Bearing Ratio (CBR) Test": cbr_test,
     "Vane Shear Test": vane_shear,
@@ -88,13 +86,11 @@ if st.session_state.completed_tests:
                 for test_name, data in st.session_state.completed_tests.items():
                     if isinstance(data, dict):
                         for key, value in data.items():
-                            # Only include DataFrames in the Excel report
                             if isinstance(value, pd.DataFrame):
                                 sheet_name = f"{test_name[:20]}_{key[:10]}"
-                                # Sanitize sheet name for Excel (max 31 chars, no special chars)
                                 sheet_name = "".join(c for c in sheet_name if c.isalnum() or c in ['_', '-']).replace(' ', '_')
                                 value.to_excel(writer, sheet_name=sheet_name, index=False)
-                    elif isinstance(data, pd.DataFrame): # Handle cases where a test might return just a DataFrame
+                    elif isinstance(data, pd.DataFrame):
                         sheet_name = test_name[:31]
                         sheet_name = "".join(c for c in sheet_name if c.isalnum() or c in ['_', '-']).replace(' ', '_')
                         data.to_excel(writer, sheet_name=sheet_name, index=False)
@@ -138,7 +134,7 @@ if st.session_state.completed_tests:
                                 doc.add_paragraph(f"Could not load image for {section_name}: {e}")
                         else:
                             doc.add_paragraph(f"**{section_name}:** {section_data}")
-                elif isinstance(test_results_dict, pd.DataFrame): # Handle cases where a test might return just a DataFrame
+                elif isinstance(test_results_dict, pd.DataFrame):
                     doc.add_heading("Results Table", level=2)
                     table = doc.add_table(rows=1, cols=len(test_results_dict.columns))
                     table.style = 'Table Grid'
